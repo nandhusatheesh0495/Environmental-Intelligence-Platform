@@ -1,0 +1,12 @@
+{
+  "case_id": "landslide-slope",
+  "environment": "landslide",
+  "location": "Wayanad Escarpment, Kerala",
+  "before_date": "2026-08-05",
+  "after_date": "2026-09-10",
+  "before_image": "C:\\Users\\nandh\\.gemini\\antigravity\\scratch\\environmental-intelligence-platform\\backend\\demo\\landslide\\landslide-slope\\before.png",
+  "after_image": "C:\\Users\\nandh\\.gemini\\antigravity\\scratch\\environmental-intelligence-platform\\backend\\demo\\landslide\\landslide-slope\\after.png",
+  "description": "Demo case for landslide monitoring workflow.",
+  "expected_detection": "Potential change identified in the active channel or slope sector.",
+  "expected_priority": "moderate"
+}

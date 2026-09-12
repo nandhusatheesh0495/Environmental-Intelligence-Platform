@@ -45,10 +45,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     },
     {
       title: "Monitoring Map",
-      href: "#",
+      href: "/monitoring-map",
       icon: MapIcon,
-      badge: "Phase 4",
-      status: "coming_soon",
+      badge: "Phase 6",
+      status: "active",
     },
     {
       title: "Reports & Evidence",
@@ -59,10 +59,10 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     },
     {
       title: "Citizen Reports",
-      href: "#",
+      href: "/citizen-reports",
       icon: Users,
       badge: "Phase 8",
-      status: "coming_soon",
+      status: "active",
     },
   ];
 

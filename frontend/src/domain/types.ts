@@ -15,7 +15,8 @@ export type EnvironmentType =
   | "coastline"
   | "wetland"
   | "agriculture"
-  | "wildfire";
+  | "wildfire"
+  | "unknown";
 
 export type ImageType = "before" | "after";
 
@@ -30,7 +31,15 @@ export type AnalysisStatus =
 
 export type SeverityLevel = "low" | "medium" | "high" | "critical";
 
-export type ReportStatus = "submitted" | "under_review" | "validated" | "dismissed";
+export type ReportStatus =
+  | "new"
+  | "submitted"
+  | "under_review"
+  | "reviewed"
+  | "resolved"
+  | "rejected"
+  | "validated"
+  | "dismissed";
 
 export type ReviewDecision = "confirmed" | "rejected" | "inconclusive";
 
@@ -105,12 +114,18 @@ export interface Review {
 
 export interface CitizenReport {
   id: string;
+  environment_type: EnvironmentType;
   location: string;
   description: string;
   image_path?: string;
+  latitude?: number;
+  longitude?: number;
+  observation_date?: string;
   status: ReportStatus;
   created_at: string;
-  contact_email?: string;
+  submitted_at?: string;
+  reporter_name?: string;
+  reporter_contact?: string;
 }
 
 export interface ProblemTypeDefinition {

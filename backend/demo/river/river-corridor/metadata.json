@@ -1,0 +1,12 @@
+{
+  "case_id": "river-corridor",
+  "environment": "river",
+  "location": "Periyar Lower Reach, Kerala",
+  "before_date": "2026-08-15",
+  "after_date": "2026-09-12",
+  "before_image": "C:\\Users\\nandh\\.gemini\\antigravity\\scratch\\environmental-intelligence-platform\\backend\\demo\\river\\river-corridor\\before.png",
+  "after_image": "C:\\Users\\nandh\\.gemini\\antigravity\\scratch\\environmental-intelligence-platform\\backend\\demo\\river\\river-corridor\\after.png",
+  "description": "Demo case for river monitoring workflow.",
+  "expected_detection": "Potential change identified in the active channel or slope sector.",
+  "expected_priority": "high"
+}

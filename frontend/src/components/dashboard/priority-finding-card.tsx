@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PriorityFinding } from "@/domain/dashboard";
 import { formatSeverity, formatInvestigationPriority, formatConfidence } from "@/domain/status";
@@ -91,15 +92,17 @@ export function PriorityFindingCard({
             Awaiting Human Officer Review
           </span>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onReview?.(finding)}
-            className="text-xs gap-1.5 h-8 border-slate-300"
-          >
-            <Eye className="h-3.5 w-3.5 text-slate-500" />
-            Inspect Evidence
-          </Button>
+          <Link href={`/analysis/${finding.analysisId}`}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onReview?.(finding)}
+              className="text-xs gap-1.5 h-8 border-slate-300"
+            >
+              <Eye className="h-3.5 w-3.5 text-slate-500" />
+              Inspect Evidence
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

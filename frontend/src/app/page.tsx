@@ -33,7 +33,8 @@ import {
   fetchRecentInvestigations,
   fetchPriorityFindings,
   fetchRecentActivity,
-  DataMode,
+  type DataMode,
+  type DemoEnvironment,
 } from "@/services/dashboard";
 import {
   DashboardSummary,
@@ -44,6 +45,7 @@ import {
 
 export default function OverviewPage() {
   const [dataMode, setDataMode] = React.useState<DataMode>("empty");
+  const [demoEnvironment, setDemoEnvironment] = React.useState<DemoEnvironment>("all");
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -52,15 +54,15 @@ export default function OverviewPage() {
   const [priorityFindings, setPriorityFindings] = React.useState<PriorityFinding[]>([]);
   const [activities, setActivities] = React.useState<ActivityItem[]>([]);
 
-  const loadData = React.useCallback(async (mode: DataMode) => {
+  const loadData = React.useCallback(async (mode: DataMode, environment: DemoEnvironment = demoEnvironment) => {
     setIsLoading(true);
     setError(null);
     try {
       const [sum, inv, find, act] = await Promise.all([
-        fetchDashboardSummary(mode),
-        fetchRecentInvestigations(mode),
-        fetchPriorityFindings(mode),
-        fetchRecentActivity(mode),
+        fetchDashboardSummary(mode, environment),
+        fetchRecentInvestigations(mode, environment),
+        fetchPriorityFindings(mode, environment),
+        fetchRecentActivity(mode, environment),
       ]);
       setSummary(sum);
       setInvestigations(inv);
@@ -74,12 +76,20 @@ export default function OverviewPage() {
   }, []);
 
   React.useEffect(() => {
-    loadData(dataMode);
-  }, [dataMode, loadData]);
+    loadData(dataMode, demoEnvironment);
+  }, [dataMode, demoEnvironment, loadData]);
 
   const handleToggleMode = () => {
     const nextMode = dataMode === "empty" ? "demo" : "empty";
     setDataMode(nextMode);
+    if (nextMode === "empty") {
+      setDemoEnvironment("all");
+    }
+  };
+
+  const handleDemoSelection = (environment: DemoEnvironment) => {
+    setDemoEnvironment(environment);
+    setDataMode("demo");
   };
 
   return (
@@ -108,6 +118,7 @@ export default function OverviewPage() {
               onClick={handleToggleMode}
               className="text-xs text-slate-600 gap-1.5 h-9"
               title="Toggle between real empty state and demonstration test fixtures"
+              aria-label={dataMode === "demo" ? "View empty state" : "Preview demo fixtures"}
             >
               <SlidersHorizontal className="h-3.5 w-3.5 text-slate-500" />
               {dataMode === "demo" ? "View Empty State" : "Preview Demo Fixtures"}
@@ -126,10 +137,25 @@ export default function OverviewPage() {
 
       {/* Demonstration Fixtures Notice (Only shown in demo mode to prevent confusion) */}
       {dataMode === "demo" && (
-        <Alert variant="warning" title="Demonstration Test Fixtures Active">
-          The records below are synthetic test fixtures for UI verification and review workflow modeling.
-          They do not represent real sensor measurements or confirmed hazards.
-        </Alert>
+        <div className="space-y-3">
+          <Alert variant="warning" title="Demonstration Test Fixtures Active">
+            The records below are synthetic test fixtures for UI verification and review workflow modeling.
+            They do not represent real sensor measurements or confirmed hazards.
+          </Alert>
+          <div className="flex flex-wrap gap-2">
+            {(["all", "river", "landslide"] as DemoEnvironment[]).map((environment) => (
+              <Button
+                key={environment}
+                variant={demoEnvironment === environment ? "primary" : "outline"}
+                size="sm"
+                onClick={() => handleDemoSelection(environment)}
+                className="text-xs capitalize"
+              >
+                {environment === "all" ? "All demo cases" : `${environment} demo`}
+              </Button>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Global Error Boundary State */}

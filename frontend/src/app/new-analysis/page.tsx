@@ -27,7 +27,13 @@ import { Alert } from "@/components/ui/alert";
 import { PageHeader } from "@/components/common/page-header";
 import { REGISTERED_ENVIRONMENTS } from "@/domain/environments";
 import { EnvironmentType } from "@/domain/types";
-import { prepareAnalysis, type AnalysisPreparationInput, type AnalysisProcessingResult } from "@/services/analysis-prep";
+import {
+  prepareAnalysis,
+  type AnalysisPreparationInput,
+  type AnalysisProcessingResult,
+  type EnvironmentalInterpretationResult,
+} from "@/services/analysis-prep";
+import { DetectionCard } from "@/components/ui/detection-card";
 
 const STEP_KEYS = ["environment", "location", "investigation", "imagery", "review"] as const;
 type StepKey = (typeof STEP_KEYS)[number];
@@ -40,7 +46,11 @@ const formatFileSize = (bytes: number) => {
 };
 
 const getPreviewUrl = (file: File) => {
-  const urlFactory = typeof window !== "undefined" ? window.URL : typeof URL !== "undefined" ? URL : null;
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const urlFactory = window.URL;
   if (!urlFactory || typeof urlFactory.createObjectURL !== "function") {
     return "";
   }
@@ -58,12 +68,16 @@ const readImageDimensions = (file: File): Promise<{ width: number; height: numbe
     const img = new Image();
 
     img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
+      if (typeof window !== "undefined") {
+        window.URL.revokeObjectURL(objectUrl);
+      }
       resolve({ width: img.naturalWidth, height: img.naturalHeight });
     };
 
     img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
+      if (typeof window !== "undefined") {
+        window.URL.revokeObjectURL(objectUrl);
+      }
       resolve(null);
     };
 
@@ -97,6 +111,7 @@ export default function NewAnalysisPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitState, setSubmitState] = React.useState<{ type: "idle" | "success" | "error"; message: string } | null>(null);
   const [processingResult, setProcessingResult] = React.useState<AnalysisProcessingResult | null>(null);
+  const [interpretationResult, setInterpretationResult] = React.useState<EnvironmentalInterpretationResult | null>(null);
 
   const currentStepIndex = STEP_KEYS.indexOf(currentStep);
   const currentEnv = REGISTERED_ENVIRONMENTS.find((env) => env.environment_id === selectedEnvId) ?? REGISTERED_ENVIRONMENTS[0];
@@ -333,12 +348,14 @@ export default function NewAnalysisPage() {
 
       const result = await prepareAnalysis(payload);
       setProcessingResult(result.details ?? null);
+      setInterpretationResult(result.interpretation ?? null);
       setSubmitState({
         type: "success",
         message: result.message,
       });
     } catch (error) {
       setProcessingResult(null);
+      setInterpretationResult(null);
       setSubmitState({
         type: "error",
         message: error instanceof Error ? error.message : "We couldn't prepare this analysis. Your inputs are still available. Please try again.",
@@ -467,6 +484,44 @@ export default function NewAnalysisPage() {
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-700">Change mask preview</p>
                 <img src={processingResult.artifacts.mask_preview} alt="Detected change mask preview" className="h-48 w-full rounded border border-slate-200 bg-white object-contain" />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {interpretationResult && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white text-[11px] font-bold">AI</span>
+              <CardTitle>Potential environmental problems</CardTitle>
+            </div>
+            <CardDescription>These are cautious, evidence-based interpretations of the observed visual change. They are not disaster predictions.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {interpretationResult.detections.map((detection) => (
+              <DetectionCard
+                key={detection.id}
+                problemType={detection.problem_type}
+                confidence={detection.confidence}
+                confidenceLabel={detection.confidence_label}
+                priority={detection.investigation_priority}
+                evidenceCount={detection.evidence.length}
+                explanation={detection.explanation}
+                recommendation={detection.recommendation}
+                evidence={detection.evidence}
+              />
+            ))}
+
+            {interpretationResult.warnings.length > 0 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                <p className="font-semibold">Interpretation warnings</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {interpretationResult.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
               </div>
             )}
           </CardContent>

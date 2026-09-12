@@ -114,8 +114,25 @@ def test_analysis_model_lifecycle() -> None:
 def test_citizen_report_model() -> None:
     report = CitizenReport(
         id="cr-001",
+        environment_type="river",
         location="Bridge Pier 4, Aluva",
         description="Noticed sudden crack and soil falling into riverbed after yesterday's rain.",
         status=ReportStatus.SUBMITTED,
+        latitude=10.085,
+        longitude=76.315,
+        image_path="/storage/citizen_reports/cr-001.png",
     )
     assert report.status == ReportStatus.SUBMITTED
+    assert report.environment_type == "river"
+    assert report.latitude == 10.085
+    assert report.longitude == 76.315
+
+    with pytest.raises(ValidationError):
+        CitizenReport(
+            id="cr-invalid",
+            environment_type="unknown",
+            location="",
+            description="",
+            latitude=200,
+            longitude=200,
+        )

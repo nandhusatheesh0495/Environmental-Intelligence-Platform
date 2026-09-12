@@ -9,6 +9,8 @@
     "frontend:type-check": "npm --prefix frontend run type-check",
     "backend:test": "cd backend && .\\.venv\\Scripts\\pytest -v",
     "backend:start": "cd backend && .\\.venv\\Scripts\\uvicorn app.main:app --reload --port 8000",
+    "seed:demo": "cd backend && .\\.venv\\Scripts\\python -m app.seed_demo",
+    "seed:demo:reset": "cd backend && .\\.venv\\Scripts\\python -m app.seed_demo --reset",
     "test:all": "npm run frontend:test && npm run backend:test"
   },
   "keywords": [

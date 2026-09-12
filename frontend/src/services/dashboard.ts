@@ -14,6 +14,7 @@ import {
 } from "@/domain/dashboard";
 
 export type DataMode = "empty" | "demo";
+export type DemoEnvironment = "all" | "river" | "landslide";
 
 export const EMPTY_SUMMARY: DashboardSummary = {
   areasMonitored: 0,
@@ -28,7 +29,7 @@ export const DEMO_SUMMARY: DashboardSummary = {
   analysesCount: 6,
   changesDetected: 9,
   highPriorityCount: 2,
-  lastUpdated: new Date().toISOString(),
+  lastUpdated: "2026-09-12T23:11:58.616Z",
 };
 
 export const DEMO_PRIORITY_FINDINGS: PriorityFinding[] = [
@@ -61,6 +62,11 @@ export const DEMO_PRIORITY_FINDINGS: PriorityFinding[] = [
     recommendedAction: "Dispatch geological hazard assessment unit and inspect downslope transport corridors.",
   },
 ];
+
+function filterDemoItems<T extends { environmentId?: string }>(items: T[], environment: DemoEnvironment): T[] {
+  if (environment === "all") return items;
+  return items.filter((item) => item.environmentId === environment);
+}
 
 export const DEMO_INVESTIGATIONS: InvestigationSummary[] = [
   {
@@ -139,31 +145,50 @@ export const DEMO_ACTIVITIES: ActivityItem[] = [
   },
 ];
 
-export async function fetchDashboardSummary(mode: DataMode = "empty"): Promise<DashboardSummary> {
-  // Simulate lightweight async retrieval
+export async function fetchDashboardSummary(
+  mode: DataMode = "empty",
+  environment: DemoEnvironment = "all",
+): Promise<DashboardSummary> {
   if (mode === "demo") {
-    return DEMO_SUMMARY;
+    const filtered = filterDemoItems(DEMO_PRIORITY_FINDINGS, environment);
+    const analyses = filterDemoItems(DEMO_INVESTIGATIONS, environment);
+    return {
+      areasMonitored: environment === "all" ? DEMO_SUMMARY.areasMonitored : Math.max(1, filtered.length),
+      analysesCount: environment === "all" ? DEMO_SUMMARY.analysesCount : analyses.length,
+      changesDetected: environment === "all" ? DEMO_SUMMARY.changesDetected : filtered.length,
+      highPriorityCount: environment === "all" ? DEMO_SUMMARY.highPriorityCount : filtered.filter((item) => item.priority === "high").length,
+      lastUpdated: DEMO_SUMMARY.lastUpdated,
+    };
   }
   return EMPTY_SUMMARY;
 }
 
-export async function fetchRecentInvestigations(mode: DataMode = "empty"): Promise<InvestigationSummary[]> {
+export async function fetchRecentInvestigations(
+  mode: DataMode = "empty",
+  environment: DemoEnvironment = "all",
+): Promise<InvestigationSummary[]> {
   if (mode === "demo") {
-    return DEMO_INVESTIGATIONS;
+    return filterDemoItems(DEMO_INVESTIGATIONS, environment);
   }
   return [];
 }
 
-export async function fetchPriorityFindings(mode: DataMode = "empty"): Promise<PriorityFinding[]> {
+export async function fetchPriorityFindings(
+  mode: DataMode = "empty",
+  environment: DemoEnvironment = "all",
+): Promise<PriorityFinding[]> {
   if (mode === "demo") {
-    return DEMO_PRIORITY_FINDINGS;
+    return filterDemoItems(DEMO_PRIORITY_FINDINGS, environment);
   }
   return [];
 }
 
-export async function fetchRecentActivity(mode: DataMode = "empty"): Promise<ActivityItem[]> {
+export async function fetchRecentActivity(
+  mode: DataMode = "empty",
+  environment: DemoEnvironment = "all",
+): Promise<ActivityItem[]> {
   if (mode === "demo") {
-    return DEMO_ACTIVITIES;
+    return filterDemoItems(DEMO_ACTIVITIES, environment);
   }
   return [];
 }

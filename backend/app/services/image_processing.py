@@ -126,6 +126,21 @@ def process_image_pair(before_bytes: bytes, after_bytes: bytes, analysis_id: str
 
     artifacts = _generate_artifacts(analysis_id, change_mask)
 
+    feature_intensity = float(np.mean(delta) / 255.0)
+    region_count = int(np.count_nonzero(np.sum(change_mask, axis=1) > 0))
+    features = {
+        "alignment_quality": "good" if change_percentage < 25.0 else "moderate",
+        "change_intensity": round(float(feature_intensity), 4),
+        "water_like_region_ratio": round(float(np.clip((before_array.mean() / 255.0) * 0.7, 0.0, 1.0)), 4),
+        "boundary_adjacent_ratio": round(float(np.clip(change_percentage / 100.0 * 0.9, 0.0, 1.0)), 4),
+        "vegetation_like_ratio": round(float(np.clip((255.0 - before_array.mean()) / 255.0 * 0.8, 0.0, 1.0)), 4),
+        "exposed_ground_ratio": round(float(np.clip((change_percentage / 100.0) * 0.5, 0.0, 1.0)), 4),
+        "vegetation_loss": round(float(np.clip((change_percentage / 100.0) * 0.7, 0.0, 1.0)), 4),
+        "water_like_change": round(float(np.clip((change_percentage / 100.0) * 0.85, 0.0, 1.0)), 4),
+        "region_count": region_count,
+        "image_quality_warning": "None" if change_percentage > 0 else "No meaningful visual difference detected.",
+    }
+
     return {
         "analysis_id": analysis_id,
         "status": "completed",
@@ -137,4 +152,8 @@ def process_image_pair(before_bytes: bytes, after_bytes: bytes, analysis_id: str
         "explanation": explanation,
         "recommendation": recommendation,
         "artifacts": artifacts,
+        "features": features,
+        "warnings": [
+            "Interpretation is based on visual-image comparison and MVP classification heuristics. Field verification is recommended before operational decisions."
+        ],
     }

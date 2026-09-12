@@ -51,8 +51,12 @@ class SeverityLevel(str, Enum):
 
 
 class ReportStatus(str, Enum):
+    NEW = "new"
     SUBMITTED = "submitted"
     UNDER_REVIEW = "under_review"
+    REVIEWED = "reviewed"
+    RESOLVED = "resolved"
+    REJECTED = "rejected"
     VALIDATED = "validated"
     DISMISSED = "dismissed"
 
@@ -148,12 +152,68 @@ class Analysis(BaseModel):
 
 class CitizenReport(BaseModel):
     id: str
+    environment_type: str = "unknown"
     location: str
     description: str
     image_path: Optional[str] = None
-    status: ReportStatus = ReportStatus.SUBMITTED
+    latitude: Optional[float] = Field(default=None, ge=-90.0, le=90.0)
+    longitude: Optional[float] = Field(default=None, ge=-180.0, le=180.0)
+    observation_date: Optional[datetime] = None
+    status: ReportStatus = ReportStatus.NEW
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    contact_email: Optional[str] = None
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    reporter_name: Optional[str] = None
+    reporter_contact: Optional[str] = None
+
+    @field_validator("environment_type")
+    @classmethod
+    def validate_environment_type(cls, value: str | None) -> str:
+        normalized = (value or "unknown").strip().lower()
+        allowed = {env.value for env in EnvironmentType} | {"unknown"}
+        if normalized not in allowed:
+            raise ValueError("Environment type must be river, landslide, or unknown.")
+        return normalized
+
+    @field_validator("location")
+    @classmethod
+    def validate_location(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("Location is required.")
+        return cleaned
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("Description is required.")
+        return cleaned
+
+    @field_validator("reporter_name")
+    @classmethod
+    def validate_reporter_name(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        return cleaned or None
+
+    @field_validator("reporter_contact")
+    @classmethod
+    def validate_reporter_contact(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        return cleaned or None
+
+    @field_validator("observation_date")
+    @classmethod
+    def validate_observation_date(cls, value: Optional[datetime]) -> Optional[datetime]:
+        if value is None:
+            return None
+        if value > datetime.now(timezone.utc):
+            raise ValueError("Observation date cannot be in the future.")
+        return value
 
 
 class Review(BaseModel):

@@ -98,15 +98,17 @@ export function InvestigationsTable({
                     {item.lastUpdated}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onSelectInvestigation?.(item)}
-                      className="h-7 text-xs text-slate-600 hover:text-slate-900 px-2"
-                    >
-                      View
-                      <ChevronRight className="h-3 w-3 ml-0.5" />
-                    </Button>
+                    <Link href={`/analysis/${item.id}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onSelectInvestigation?.(item)}
+                        className="h-7 text-xs text-slate-600 hover:text-slate-900 px-2"
+                      >
+                        View
+                        <ChevronRight className="h-3 w-3 ml-0.5" />
+                      </Button>
+                    </Link>
                   </td>
                 </tr>
               );
@@ -155,14 +157,16 @@ export function InvestigationsTable({
                   label={prioConfig.label}
                   variant={prioConfig.variant}
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onSelectInvestigation?.(item)}
-                  className="h-7 text-xs"
-                >
-                  View Details
-                </Button>
+                <Link href={`/analysis/${item.id}`}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onSelectInvestigation?.(item)}
+                    className="h-7 text-xs"
+                  >
+                    View Details
+                  </Button>
+                </Link>
               </div>
             </div>
           );

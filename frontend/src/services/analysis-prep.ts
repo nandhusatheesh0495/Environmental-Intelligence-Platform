@@ -44,10 +44,34 @@ export interface AnalysisProcessingResult {
   artifacts?: AnalysisProcessingArtifact;
 }
 
+export interface EnvironmentalDetection {
+  id: string;
+  analysis_id: string;
+  environment_type: string;
+  problem_type: string;
+  confidence: number;
+  confidence_label: string;
+  investigation_priority: string;
+  evidence: string[];
+  explanation: string;
+  recommendation: string;
+  uncertainty_reasons?: string[];
+}
+
+export interface EnvironmentalInterpretationResult {
+  analysis_id: string;
+  environment_type: string;
+  status: "completed" | "failed";
+  detections: EnvironmentalDetection[];
+  warnings: string[];
+  limitations: string[];
+}
+
 export interface AnalysisPreparationResult {
   success: boolean;
   message: string;
   details?: AnalysisProcessingResult;
+  interpretation?: EnvironmentalInterpretationResult;
 }
 
 export async function prepareAnalysis(input: AnalysisPreparationInput): Promise<AnalysisPreparationResult> {
@@ -72,9 +96,27 @@ export async function prepareAnalysis(input: AnalysisPreparationInput): Promise<
 
   const data = (await response.json()) as AnalysisProcessingResult;
 
+  const interpretationResponse = await fetch(`${apiBaseUrl}/api/v1/analysis/interpret`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      analysis_id: data.analysis_id,
+      environment_type: input.environmentType,
+      change_result: data,
+      context: input.environmentContext,
+    }),
+  });
+
+  const interpretation = interpretationResponse.ok
+    ? ((await interpretationResponse.json()) as EnvironmentalInterpretationResult)
+    : undefined;
+
   return {
     success: true,
     message: data.evidence_summary || "Analysis preparation complete. Image processing completed successfully.",
     details: data,
+    interpretation,
   };
 }
