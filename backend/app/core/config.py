@@ -15,7 +15,10 @@ class Settings(BaseModel):
     BACKEND_CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
         "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ]
     DATA_STORAGE_PATH: str = os.getenv("DATA_STORAGE_PATH", "./storage")
     HUMAN_IN_THE_LOOP_ENFORCED: bool = True
