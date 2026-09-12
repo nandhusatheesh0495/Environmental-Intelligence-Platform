@@ -15,8 +15,8 @@ export interface DropZoneProps {
 
 export function DropZone({
   label,
-  description = "Supports GeoTIFF, PNG, or JPEG up to 25MB",
-  acceptedTypes = ["image/png", "image/jpeg", "image/tiff", ".tif", ".tiff", ".geotiff"],
+  description = "Supports JPEG, PNG, or WebP up to 25MB",
+  acceptedTypes = ["image/jpeg", "image/png", "image/webp", ".jpg", ".jpeg", ".png", ".webp"],
   maxSizeMb = 25,
   onFileSelect,
   selectedFile,
@@ -29,10 +29,27 @@ export function DropZone({
 
   const validateAndSelect = (file: File) => {
     setInternalError(null);
-    if (file.size > maxSizeMb * 1024 * 1024) {
-      setInternalError(`File size exceeds maximum threshold of ${maxSizeMb}MB.`);
+
+    const allowedValues = acceptedTypes.map((type) => type.toLowerCase());
+    const fileType = file.type.toLowerCase();
+    const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const isAllowedType = allowedValues.some((type) => {
+      if (type.startsWith("image/")) {
+        return fileType === type;
+      }
+      return extension === type.replace(".", "");
+    });
+
+    if (!isAllowedType) {
+      setInternalError("Unsupported image format. Use JPEG, PNG, or WebP.");
       return;
     }
+
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      setInternalError(`File size exceeds the ${maxSizeMb}MB limit.`);
+      return;
+    }
+
     onFileSelect?.(file);
   };
 
