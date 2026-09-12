@@ -1,0 +1,23 @@
+{
+  "name": "environmental-intelligence-platform",
+  "version": "0.1.0",
+  "description": "AI-powered environmental change detection and monitoring platform for Environmental and Disaster Management Officers.",
+  "scripts": {
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:test": "npm --prefix frontend run test",
+    "frontend:type-check": "npm --prefix frontend run type-check",
+    "backend:test": "cd backend && .\\.venv\\Scripts\\pytest -v",
+    "backend:start": "cd backend && .\\.venv\\Scripts\\uvicorn app.main:app --reload --port 8000",
+    "test:all": "npm run frontend:test && npm run backend:test"
+  },
+  "keywords": [
+    "environmental-intelligence",
+    "change-detection",
+    "riverbank-erosion",
+    "landslide-monitoring",
+    "disaster-management"
+  ],
+  "author": "Google DeepMind Advanced Agentic Coding Pair",
+  "license": "MIT"
+}
