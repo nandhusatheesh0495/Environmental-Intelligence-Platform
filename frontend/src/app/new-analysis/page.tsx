@@ -27,7 +27,7 @@ import { Alert } from "@/components/ui/alert";
 import { PageHeader } from "@/components/common/page-header";
 import { REGISTERED_ENVIRONMENTS } from "@/domain/environments";
 import { EnvironmentType } from "@/domain/types";
-import { prepareAnalysis, type AnalysisPreparationInput } from "@/services/analysis-prep";
+import { prepareAnalysis, type AnalysisPreparationInput, type AnalysisProcessingResult } from "@/services/analysis-prep";
 
 const STEP_KEYS = ["environment", "location", "investigation", "imagery", "review"] as const;
 type StepKey = (typeof STEP_KEYS)[number];
@@ -96,6 +96,7 @@ export default function NewAnalysisPage() {
   const [imageMetadata, setImageMetadata] = React.useState<{ before: { width?: number; height?: number }; after: { width?: number; height?: number } }>({ before: {}, after: {} });
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitState, setSubmitState] = React.useState<{ type: "idle" | "success" | "error"; message: string } | null>(null);
+  const [processingResult, setProcessingResult] = React.useState<AnalysisProcessingResult | null>(null);
 
   const currentStepIndex = STEP_KEYS.indexOf(currentStep);
   const currentEnv = REGISTERED_ENVIRONMENTS.find((env) => env.environment_id === selectedEnvId) ?? REGISTERED_ENVIRONMENTS[0];
@@ -331,14 +332,16 @@ export default function NewAnalysisPage() {
       };
 
       const result = await prepareAnalysis(payload);
+      setProcessingResult(result.details ?? null);
       setSubmitState({
         type: "success",
         message: result.message,
       });
     } catch (error) {
+      setProcessingResult(null);
       setSubmitState({
         type: "error",
-        message: "We couldn't prepare this analysis. Your inputs are still available. Please try again.",
+        message: error instanceof Error ? error.message : "We couldn't prepare this analysis. Your inputs are still available. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -413,6 +416,61 @@ export default function NewAnalysisPage() {
         <Alert variant={submitState.type === "error" ? "error" : "success"} title={submitState.type === "error" ? "Preparation issue" : "Analysis prepared"}>
           {submitState.message}
         </Alert>
+      )}
+
+      {processingResult && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white text-[11px] font-bold">✓</span>
+              <CardTitle>Visual change summary</CardTitle>
+            </div>
+            <CardDescription>Results from the generic image-processing pipeline. This stays at the visual-change level and does not assign a final environmental diagnosis.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Change</p>
+                <p className="mt-2 text-xl font-semibold text-slate-900">{processingResult.change_percentage.toFixed(2)}%</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Detected pixels</p>
+                <p className="mt-2 text-xl font-semibold text-slate-900">{processingResult.detected_pixels.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Severity</p>
+                <p className="mt-2 text-xl font-semibold capitalize text-slate-900">{processingResult.severity}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Confidence</p>
+                <p className="mt-2 text-xl font-semibold text-slate-900">{(processingResult.confidence * 100).toFixed(0)}%</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">Evidence summary</p>
+                <p className="mt-2 text-sm text-slate-700">{processingResult.evidence_summary}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">Recommended review</p>
+                <p className="mt-2 text-sm text-slate-700">{processingResult.recommendation}</p>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+              <p className="font-medium text-slate-900">Explanation</p>
+              <p className="mt-2">{processingResult.explanation}</p>
+            </div>
+
+            {processingResult.artifacts?.mask_preview && (
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-700">Change mask preview</p>
+                <img src={processingResult.artifacts.mask_preview} alt="Detected change mask preview" className="h-48 w-full rounded border border-slate-200 bg-white object-contain" />
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {currentStep === "environment" && (

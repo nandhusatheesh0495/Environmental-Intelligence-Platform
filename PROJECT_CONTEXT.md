@@ -16,8 +16,8 @@ Upload Your Own → Validate → Analyze → Detect Change → Interpret → Rev
 ## Current implementation status
 Phase 1: Complete
 Phase 2: Complete
-Phase 3: Not started
-Phase 4: Not started
+Phase 3: Complete
+Phase 4: Complete
 Phase 5: Not started
 Phase 6: Not started
 Phase 7: Not started
@@ -55,7 +55,7 @@ The implementation follows a professional, minimal, evidence-focused aesthetic: 
 
 ## Current routes
 - /: Environmental Overview dashboard
-- /new-analysis: analysis intake workflow shell
+- /new-analysis: guided analysis workflow with real Phase 4 image processing integration
 - /environments: environment registry and domain spec catalog
 
 ## Test commands
