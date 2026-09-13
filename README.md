@@ -1,151 +1,158 @@
 # Environmental Intelligence Platform
 
-> AI-powered environmental change detection and monitoring platform for environmental and disaster-management officers, with a citizen observation workflow and human-in-the-loop review.
+> AI-assisted environmental monitoring that turns before-and-after imagery into actionable, evidence-based environmental intelligence.
 
-## 1. Product purpose
-The platform compares environmental imagery over time, identifies meaningful surface alterations, surfaces potential environmental issues, presents evidence and confidence, and supports human officers in investigation and reporting.
+The **Environmental Intelligence Platform** is a web-based platform for environmental and disaster-management teams to monitor geographic areas, compare environmental imagery over time, identify meaningful changes, investigate potential environmental problems, and generate evidence-backed reports for human review.
 
-It is designed to be honest about the current MVP scope:
-- it supports evidence-based review and interpretation
-- it does not claim scientifically validated disaster prediction
-- it separates AI-assisted classification from human confirmation
-- it keeps demo data clearly labeled as synthetic
+The platform is designed to work across multiple environmental domains rather than being limited to a single river or location.
 
-## 2. Primary users
-- Environmental / Disaster Management Officer
-- Citizen Reporter
+**Primary environments:** River · Landslide
+**Primary user:** Environmental / Disaster Management Officer
+**Secondary user:** Citizen
 
-## 3. Supported environments
-- River
-- Landslide
+---
 
-The architecture remains environment-agnostic so the registry can support more domains without rewriting the core platform.
+## Overview
 
-## 4. Core workflow
-1. Dashboard overview
-2. New Analysis
-3. Select environment and location
-4. Guided investigation questions
-5. Upload before and after imagery
-6. Validate inputs
-7. Analyze imagery and produce change detection
-8. Interpret potential problems with confidence and evidence
-9. Review on monitoring map
-10. Generate area report
-11. Human officer review and confirmation
-12. Citizen observation submission and officer review
+Environmental changes are often difficult to detect manually, especially when monitoring large or geographically distributed areas.
 
-## 5. Architecture overview
+The Environmental Intelligence Platform provides a structured workflow:
 
 ```text
-User (Officer / Citizen)
-  ↓
-Next.js 14 + React + TypeScript + Tailwind frontend
-  ↓
-FastAPI backend + Pydantic validation
-  ↓
-Environment registry + analysis services + map services + citizen reporting services
-  ↓
-Local storage for uploaded images and demo data fixtures
+Upload Before + After Imagery
+            ↓
+       Validate Inputs
+            ↓
+      Detect Visual Change
+            ↓
+   Identify Potential Problems
+            ↓
+   Show Evidence + Confidence
+            ↓
+      Map Investigation Areas
+            ↓
+       Human Verification
+            ↓
+       Generate Report
 ```
 
-## 6. Requirements
-- Node.js 20+
-- Python 3.13+
-- npm
-- pip / virtual environment
+The goal is not to replace environmental experts.
 
-## 7. Install
+Instead, the platform helps experts **find important changes faster, understand why the system flagged them, and make better-informed decisions.**
 
-### Frontend
-```bash
-cd frontend
-npm install
+---
+
+## Key Features
+
+### 🛰️ Before / After Change Detection
+
+Upload two images representing the same area at different points in time.
+
+The system performs image preprocessing and comparison to identify meaningful visual changes.
+
+Outputs include:
+
+* Change mask
+* Changed regions
+* Change percentage
+* Change severity
+* Visual overlays
+* Before/after comparison
+* Alignment quality indicators
+
+---
+
+### 🌊 River Monitoring
+
+The River environment supports detection of potential changes such as:
+
+* Potential riverbank erosion
+* Significant water-area change
+* Exposed riverbed
+* Potential sediment-related / exposed-bed change
+* Riverbank movement
+* Other significant water-body changes
+
+The system can incorporate investigation context such as:
+
+* Basin
+* Recent rainfall
+* Dam releases
+* Seasonal flow conditions
+* Nearby infrastructure
+
+---
+
+### ⛰️ Landslide Monitoring
+
+The Landslide environment supports detection of potential:
+
+* Landslide-related change
+* Terrain disturbance
+* Vegetation loss / canopy stripping
+* Exposed ground and colluvium
+
+Investigation context can include:
+
+* Sector
+* Antecedent rainfall
+* Slope gradient
+* Downslope infrastructure or settlements
+
+---
+
+### 🧠 AI-Assisted Environmental Interpretation
+
+The platform uses a hybrid approach.
+
+Image processing is responsible for identifying visual change, while environmental interpretation uses image-derived features and environment-specific rules/classification.
+
+The system considers signals such as:
+
+* Changed area
+* Change intensity
+* Shape and compactness
+* Region orientation
+* Spatial position
+* Water-like characteristics
+* Vegetation-like characteristics
+* Exposed-ground characteristics
+* Connected regions
+* Image alignment quality
+
+Where appropriate, language models may assist with explanation wording and report generation, but they are **not treated as the sole source of visual classification.**
+
+---
+
+## Evidence-First AI
+
+Every AI finding is designed around three questions:
+
+### What?
+
+**What potential environmental problem was detected?**
+
+Example:
+
+> Potential Riverbank Erosion
+
+### How confident?
+
+The system reports classification confidence separately from environmental or disaster probability.
+
+Example:
+
+> Confidence: 86% — High
+
+### Why?
+
+The system provides evidence supporting the finding.
+
+Example:
+
+```text
+Evidence
+• 14.8% localized image change
+• Change concentrated along the riverbank
+• Elongated boundary consistent with bank movement
 ```
-
-### Backend
-```bash
-cd backend
-python -m venv .venv
-./.venv/Scripts/pip install -r requirements.txt
-```
-
-## 8. Run
-
-### Backend
-```bash
-cd backend
-./.venv/Scripts/uvicorn app.main:app --reload --port 8000
-```
-
-### Frontend
-```bash
-cd frontend
-npm run dev
-```
-
-Open:
-- http://localhost:3000
-- http://localhost:8000/docs for API docs
-
-## 9. Demo workflow
-The platform includes explicit demo fixtures to help with presentation and QA without replacing the upload-your-own workflow.
-
-Use the demo toggle from the overview page, or run the seed command:
-
-```bash
-cd backend
-./.venv/Scripts/python -m app.seed_demo
-```
-
-See DEMO_SCRIPT.md for a concise 3–5 minute hackathon script.
-
-## 10. Environment variables
-Documented environment variables are limited to the app-level configuration used by the frontend/backend:
-- NEXT_PUBLIC_API_BASE_URL
-- NEXT_PUBLIC_MAP_STYLE_URL
-
-Do not commit secrets or private credentials.
-
-## 11. Test commands
-
-```bash
-cd frontend
-npm run test -- --run --reporter=basic
-npm run type-check
-npm run lint
-npm run build
-
-cd backend
-./.venv/Scripts/pytest -q
-```
-
-## 12. Current verification status
-Verified in the repo as of 2026-09-13:
-- Frontend tests: 49 passed
-- Backend tests: 32 passed
-- TypeScript check: passed
-- Frontend lint: passed (warnings only)
-- Production build: passed
-
-## 13. Final MVP status
-This repository is ready for a concise hackathon demonstration and final handoff. It is a strong MVP, not a production-grade environmental monitoring system.
-
-## 14. Architecture and implementation notes
-- River and Landslide are implemented as environment-specific registry entries.
-- Analysis and interpretation stay separate from the UI and use cautious confidence language.
-- Human confirmation is intentionally separate from AI confidence.
-- Citizen reports remain distinct from AI detections and map layers.
-- Demo data is clearly labeled and does not imply live operational conditions.
-
-## 15. Known limitations
-- No live satellite or external model ingestion
-- No production cloud infrastructure or auth layer
-- No advanced ML training pipeline
-- Demo data remains synthetic for presentation and QA purposes
-
-## 16. Notes for maintainers
-- Prefer evidence-backed language over disaster-probability claims.
-- Keep demo content distinct from user-submitted operational data.
-- Preserve the environment registry pattern when extending the platform.
-- Do not introduce production-grade integrations during MVP work.
